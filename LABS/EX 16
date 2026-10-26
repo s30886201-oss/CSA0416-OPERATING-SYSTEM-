@@ -1,0 +1,92 @@
+#include <stdio.h>
+
+struct Employee
+{
+    int id;
+    char name[30];
+    float salary;
+};
+
+int main()
+{
+    FILE *fp;
+    struct Employee e;
+    int choice, id;
+    long pos;
+
+    fp = fopen("employee.dat", "rb+");
+
+    if (fp == NULL)
+        fp = fopen("employee.dat", "wb+");
+
+    if (fp == NULL)
+    {
+        printf("Unable to open file.\n");
+        return 1;
+    }
+
+    while (1)
+    {
+        printf("\n--- Employee Details ---\n");
+        printf("1. Add Employee\n");
+        printf("2. Display Employee\n");
+        printf("3. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+            case 1:
+                printf("Enter Employee ID: ");
+                scanf("%d", &e.id);
+
+                printf("Enter Employee Name: ");
+                scanf("%29s", e.name);
+
+                printf("Enter Salary: ");
+                scanf("%f", &e.salary);
+
+                pos = (e.id - 1) * sizeof(struct Employee);
+
+                fseek(fp, pos, SEEK_SET);
+                fwrite(&e, sizeof(struct Employee), 1, fp);
+
+                printf("Employee details saved successfully.\n");
+                break;
+
+            case 2:
+                printf("Enter Employee ID to display: ");
+                scanf("%d", &id);
+
+                if (id <= 0)
+                {
+                    printf("Invalid Employee ID.\n");
+                    break;
+                }
+
+                pos = (id - 1) * sizeof(struct Employee);
+
+                fseek(fp, pos, SEEK_SET);
+
+                if (fread(&e, sizeof(struct Employee), 1, fp) == 1
+                    && e.id == id)
+                {
+                    printf("\nEmployee ID: %d\n", e.id);
+                    printf("Employee Name: %s\n", e.name);
+                    printf("Salary: %.2f\n", e.salary);
+                }
+                else
+                {
+                    printf("Employee record not found.\n");
+                }
+                break;
+
+            case 3:
+                fclose(fp);
+                return 0;
+
+            default:
+                printf("Invalid choice.\n");
+        }
+    }
+}
