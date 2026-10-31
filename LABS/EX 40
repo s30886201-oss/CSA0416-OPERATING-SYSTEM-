@@ -1,0 +1,45 @@
+#include <stdio.h>
+#include <sys/stat.h>
+
+int main()
+{
+    char filename[50];
+    struct stat file;
+    int permission;
+
+    printf("Enter the file name: ");
+    scanf("%49s", filename);
+
+    // Get file information
+    if(stat(filename, &file) == -1)
+    {
+        printf("File does not exist!\n");
+        return 1;
+    }
+
+    permission = file.st_mode;
+
+    printf("\nFile Access Permissions\n");
+
+    printf("\nUser Type\tRead\tWrite\tExecute\n");
+
+    printf("Owner\t\t");
+    printf("%s\t", (permission & S_IRUSR) ? "Yes" : "No");
+    printf("%s\t", (permission & S_IWUSR) ? "Yes" : "No");
+    printf("%s\n", (permission & S_IXUSR) ? "Yes" : "No");
+
+    printf("Group\t\t");
+    printf("%s\t", (permission & S_IRGRP) ? "Yes" : "No");
+    printf("%s\t", (permission & S_IWGRP) ? "Yes" : "No");
+    printf("%s\n", (permission & S_IXGRP) ? "Yes" : "No");
+
+    printf("Others\t\t");
+    printf("%s\t", (permission & S_IROTH) ? "Yes" : "No");
+    printf("%s\t", (permission & S_IWOTH) ? "Yes" : "No");
+    printf("%s\n", (permission & S_IXOTH) ? "Yes" : "No");
+
+    printf("\nNumeric Permission: %o\n",
+           permission & 0777);
+
+    return 0;
+}
