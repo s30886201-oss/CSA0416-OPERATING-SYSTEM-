@@ -1,0 +1,108 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    int request[50], n, head, size;
+    int i, j, temp, total = 0;
+    int direction;
+
+    printf("Enter the number of disk requests: ");
+    scanf("%d", &n);
+
+    printf("Enter the disk request sequence:\n");
+
+    for(i = 0; i < n; i++)
+    {
+        scanf("%d", &request[i]);
+    }
+
+    printf("Enter the initial head position: ");
+    scanf("%d", &head);
+
+    printf("Enter the total number of cylinders: ");
+    scanf("%d", &size);
+
+    printf("Enter direction (0 = Left, 1 = Right): ");
+    scanf("%d", &direction);
+
+    // Sort requests in ascending order
+    for(i = 0; i < n - 1; i++)
+    {
+        for(j = 0; j < n - i - 1; j++)
+        {
+            if(request[j] > request[j + 1])
+            {
+                temp = request[j];
+                request[j] = request[j + 1];
+                request[j + 1] = temp;
+            }
+        }
+    }
+
+    // Find the position where requests are greater
+    // than or equal to the head position
+    for(i = 0; i < n; i++)
+    {
+        if(request[i] >= head)
+            break;
+    }
+
+    printf("\nSCAN Disk Scheduling\n");
+    printf("Seek Sequence:\n");
+    printf("%d", head);
+
+    if(direction == 1)
+    {
+        // Move towards right
+        for(j = i; j < n; j++)
+        {
+            total += abs(head - request[j]);
+            head = request[j];
+            printf(" -> %d", head);
+        }
+
+        // Move to the last cylinder
+        total += abs(head - (size - 1));
+        head = size - 1;
+        printf(" -> %d", head);
+
+        // Reverse direction
+        for(j = i - 1; j >= 0; j--)
+        {
+            total += abs(head - request[j]);
+            head = request[j];
+            printf(" -> %d", head);
+        }
+    }
+    else
+    {
+        // Move towards left
+        for(j = i - 1; j >= 0; j--)
+        {
+            total += abs(head - request[j]);
+            head = request[j];
+            printf(" -> %d", head);
+        }
+
+        // Move to the first cylinder
+        total += abs(head - 0);
+        head = 0;
+        printf(" -> %d", head);
+
+        // Reverse direction
+        for(j = i; j < n; j++)
+        {
+            total += abs(head - request[j]);
+            head = request[j];
+            printf(" -> %d", head);
+        }
+    }
+
+    printf("\n\nTotal Head Movement = %d\n", total);
+
+    printf("Average Head Movement = %.2f\n",
+           (float)total / n);
+
+    return 0;
+}
