@@ -1,0 +1,47 @@
+#include <stdio.h>
+
+int main()
+{
+    int n, i, search;
+
+    printf("Enter the number of records: ");
+    scanf("%d", &n);
+
+    int block[n];
+
+    printf("\nEnter the block numbers:\n");
+
+    for(i = 0; i < n; i++)
+    {
+        printf("Record %d: ", i + 1);
+        scanf("%d", &block[i]);
+    }
+
+    printf("\nSequential File Allocation:\n");
+
+    for(i = 0; i < n; i++)
+    {
+        printf("Record %d -> Block %d\n", i + 1, block[i]);
+    }
+
+    printf("\nEnter the record number to access: ");
+    scanf("%d", &search);
+
+    if(search >= 1 && search <= n)
+    {
+        printf("\nAccessing Record %d:\n", search);
+
+        for(i = 0; i < search; i++)
+        {
+            printf("Reading Block %d\n", block[i]);
+        }
+
+        printf("\nRecord %d accessed successfully!\n", search);
+    }
+    else
+    {
+        printf("Invalid record number!\n");
+    }
+
+    return 0;
+}
