@@ -1,0 +1,107 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_REQUESTS 100
+
+int main(void)
+{
+    int requests[MAX_REQUESTS];
+    int n, head, diskSize, direction;
+    int totalMovement = 0;
+
+    printf("Number of requests (1-%d): ", MAX_REQUESTS);
+    if (scanf("%d", &n) != 1 || n < 1 || n > MAX_REQUESTS) {
+        printf("Invalid number of requests.\n");
+        return 1;
+    }
+
+    printf("Disk size (number of tracks): ");
+    if (scanf("%d", &diskSize) != 1 || diskSize < 1) {
+        printf("Invalid disk size.\n");
+        return 1;
+    }
+
+    printf("Initial head position (0-%d): ", diskSize - 1);
+    if (scanf("%d", &head) != 1 || head < 0 || head >= diskSize) {
+        printf("Invalid head position.\n");
+        return 1;
+    }
+
+    printf("Direction (0 = toward track 0, 1 = toward last track): ");
+    if (scanf("%d", &direction) != 1 || (direction != 0 && direction != 1)) {
+        printf("Invalid direction.\n");
+        return 1;
+    }
+
+    printf("Enter the request track numbers:\n");
+    for (int i = 0; i < n; i++) {
+        if (scanf("%d", &requests[i]) != 1 ||
+            requests[i] < 0 || requests[i] >= diskSize) {
+            printf("Invalid request track.\n");
+            return 1;
+        }
+    }
+
+    /* Sort requests in ascending order. */
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (requests[j] > requests[j + 1]) {
+                int temp = requests[j];
+                requests[j] = requests[j + 1];
+                requests[j + 1] = temp;
+            }
+        }
+    }
+
+    printf("\nHead movement: %d", head);
+
+    if (direction == 1) {  /* Move toward the last track first. */
+        for (int i = 0; i < n; i++) {
+            if (requests[i] >= head) {
+                totalMovement += abs(requests[i] - head);
+                head = requests[i];
+                printf(" -> %d", head);
+            }
+        }
+
+        if (head != diskSize - 1) {
+            totalMovement += (diskSize - 1) - head;
+            head = diskSize - 1;
+            printf(" -> %d", head);
+        }
+
+        for (int i = n - 1; i >= 0; i--) {
+            if (requests[i] < head) {
+                totalMovement += abs(requests[i] - head);
+                head = requests[i];
+                printf(" -> %d", head);
+            }
+        }
+    } else {  /* Move toward track 0 first. */
+        for (int i = n - 1; i >= 0; i--) {
+            if (requests[i] <= head) {
+                totalMovement += abs(requests[i] - head);
+                head = requests[i];
+                printf(" -> %d", head);
+            }
+        }
+
+        if (head != 0) {
+            totalMovement += head;
+            head = 0;
+            printf(" -> %d", head);
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (requests[i] > head) {
+                totalMovement += abs(requests[i] - head);
+                head = requests[i];
+                printf(" -> %d", head);
+            }
+        }
+    }
+
+    printf("\nTotal head movement: %d tracks\n", totalMovement);
+
+    return 0;
+}
