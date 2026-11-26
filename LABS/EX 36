@@ -1,0 +1,192 @@
+#include <stdio.h>
+#include <string.h>
+
+#define DISK_BLOCKS 50
+#define MAX_FILES 20
+#define NAME_LENGTH 30
+
+typedef struct {
+    int used;
+    int next;
+} Block;
+
+typedef struct {
+    char name[NAME_LENGTH];
+    int first;
+    int last;
+} File;
+
+Block disk[DISK_BLOCKS];
+File directory[MAX_FILES];
+int fileCount = 0;
+int allocationCursor = 0;
+
+/* Find a free block, searching from a changing starting position. */
+int findFreeBlock(void)
+{
+    for (int i = 0; i < DISK_BLOCKS; i++) {
+        int block = (allocationCursor + i * 7) % DISK_BLOCKS;
+
+        if (!disk[block].used) {
+            allocationCursor = (block + 1) % DISK_BLOCKS;
+            return block;
+        }
+    }
+
+    return -1;
+}
+
+void createFile(void)
+{
+    char name[NAME_LENGTH];
+    int blockCount;
+
+    if (fileCount == MAX_FILES) {
+        printf("Directory is full.\n");
+        return;
+    }
+
+    printf("File name: ");
+    scanf("%29s", name);
+
+    for (int i = 0; i < fileCount; i++) {
+        if (strcmp(directory[i].name, name) == 0) {
+            printf("A file with that name already exists.\n");
+            return;
+        }
+    }
+
+    printf("Number of blocks needed: ");
+    if (scanf("%d", &blockCount) != 1 || blockCount <= 0) {
+        printf("Enter a positive number.\n");
+        return;
+    }
+
+    int available = 0;
+    for (int i = 0; i < DISK_BLOCKS; i++) {
+        if (!disk[i].used)
+            available++;
+    }
+
+    if (blockCount > available) {
+        printf("Not enough free disk blocks.\n");
+        return;
+    }
+
+    int first = -1;
+    int last = -1;
+
+    for (int i = 0; i < blockCount; i++) {
+        int block = findFreeBlock();
+
+        disk[block].used = 1;
+        disk[block].next = -1;
+
+        if (first == -1) {
+            first = block;
+        } else {
+            disk[last].next = block;
+        }
+
+        last = block;
+    }
+
+    strcpy(directory[fileCount].name, name);
+    directory[fileCount].first = first;
+    directory[fileCount].last = last;
+    fileCount++;
+
+    printf("File created. First block: %d, last block: %d\n", first, last);
+}
+
+void displayFiles(void)
+{
+    if (fileCount == 0) {
+        printf("No files in the directory.\n");
+        return;
+    }
+
+    printf("\nDirectory and block chains:\n");
+
+    for (int i = 0; i < fileCount; i++) {
+        printf("%s (first=%d, last=%d): ",
+               directory[i].name,
+               directory[i].first,
+               directory[i].last);
+
+        int block = directory[i].first;
+        while (block != -1) {
+            printf("%d", block);
+            block = disk[block].next;
+            if (block != -1)
+                printf(" -> ");
+        }
+        printf(" -> END\n");
+    }
+}
+
+void deleteFile(void)
+{
+    char name[NAME_LENGTH];
+    int fileIndex = -1;
+
+    printf("File name to delete: ");
+    scanf("%29s", name);
+
+    for (int i = 0; i < fileCount; i++) {
+        if (strcmp(directory[i].name, name) == 0) {
+            fileIndex = i;
+            break;
+        }
+    }
+
+    if (fileIndex == -1) {
+        printf("File not found.\n");
+        return;
+    }
+
+    int block = directory[fileIndex].first;
+    while (block != -1) {
+        int nextBlock = disk[block].next;
+        disk[block].used = 0;
+        disk[block].next = -1;
+        block = nextBlock;
+    }
+
+    for (int i = fileIndex; i < fileCount - 1; i++)
+        directory[i] = directory[i + 1];
+
+    fileCount--;
+    printf("File deleted and its blocks freed.\n");
+}
+
+int main(void)
+{
+    int choice;
+
+    for (int i = 0; i < DISK_BLOCKS; i++) {
+        disk[i].used = 0;
+        disk[i].next = -1;
+    }
+
+    do {
+        printf("\n1. Create file\n");
+        printf("2. Display files\n");
+        printf("3. Delete file\n");
+        printf("4. Exit\n");
+        printf("Choice: ");
+
+        if (scanf("%d", &choice) != 1)
+            return 1;
+
+        switch (choice) {
+            case 1: createFile();   break;
+            case 2: displayFiles(); break;
+            case 3: deleteFile();   break;
+            case 4: printf("Exiting.\n"); break;
+            default: printf("Invalid choice.\n");
+        }
+    } while (choice != 4);
+
+    return 0;
+}
